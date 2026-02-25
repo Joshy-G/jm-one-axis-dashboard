@@ -52,8 +52,8 @@ st.markdown("""
         margin: 0 auto !important;
         display: block !important;
     }
-    header .stAppHeader div:last-child {
-        display: none !important;
+    header [data-testid="stHeaderToolbar"] {
+    display: none !important;
     }
     footer {
         visibility: hidden !important;
