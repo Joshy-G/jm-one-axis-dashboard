@@ -45,7 +45,7 @@ st.markdown("""
         background-color: #21867a;
     }
 
-    /* ---------- LOGO RESPONSIVE (kept) ---------- */
+    /* ---------- LOGO RESPONSIVE ---------- */
     .stImage img {
         max-width: 90% !important;
         height: auto !important;
@@ -53,13 +53,18 @@ st.markdown("""
         display: block !important;
     }
 
-    /* ---------- HIDE FOOTER (optional) ---------- */
+    /* ---------- HIDE ONLY THE RIGHT SIDE TOOLBAR (KEEP HAMBURGER) ---------- */
+    header .stAppHeader div:last-child {
+        display: none !important;
+    }
+
+    /* ---------- HIDE FOOTER ---------- */
     footer {
         visibility: hidden !important;
         display: none !important;
     }
 
-    /* ---------- MOBILE PADDING (kept) ---------- */
+    /* ---------- MOBILE PADDING ---------- */
     @media only screen and (max-width: 600px) {
         .block-container {
             padding-top: 1rem !important;
@@ -67,7 +72,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
- 
+   
 
 # ==========================================
 # GOOGLE SHEETS CONNECTION (CACHED)
