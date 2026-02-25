@@ -13,7 +13,6 @@ import uuid
 
 st.set_page_config(page_title="JM ONE AXIS Dashboard", layout="wide")
 
-# Place this right after st.set_page_config()
 st.markdown("""
 <style>
     /* ---------- LIGHT THEME ---------- */
@@ -45,26 +44,23 @@ st.markdown("""
         background-color: #21867a;
     }
 
-    /* ---------- LOGO RESPONSIVE ---------- */
+    /* ---------- HIDE TOP-RIGHT TOOLBAR ---------- */
+    header [data-testid="stToolbar"],
+    header [data-testid="stHeaderToolbar"] {
+        display: none !important;
+    }
+
+    /* ---------- EXISTING RULES ---------- */
     .stImage img {
         max-width: 90% !important;
         height: auto !important;
         margin: 0 auto !important;
         display: block !important;
     }
-
-    /* ---------- HIDE ONLY THE RIGHT SIDE TOOLBAR (KEEP HAMBURGER) ---------- */
-    header .stAppHeader div:last-child {
-        display: none !important;
-    }
-
-    /* ---------- HIDE FOOTER ---------- */
     footer {
         visibility: hidden !important;
         display: none !important;
     }
-
-    /* ---------- MOBILE PADDING ---------- */
     @media only screen and (max-width: 600px) {
         .block-container {
             padding-top: 1rem !important;
@@ -72,7 +68,6 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-   
 
 # ==========================================
 # GOOGLE SHEETS CONNECTION (CACHED)
