@@ -45,9 +45,8 @@ st.markdown("""
         background-color: #21867a;
     }
 
-    /* ---------- HIDE TOP-RIGHT TOOLBAR ---------- */
-    header [data-testid="stToolbar"],
-    header [data-testid="stHeaderToolbar"] {
+    /* ---------- HIDE ONLY THE RIGHT SIDE TOOLBAR (KEEP HAMBURGER) ---------- */
+    header .stAppHeader div:last-child {
         display: none !important;
     }
 
@@ -69,7 +68,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-
+  
 # ==========================================
 # GOOGLE SHEETS CONNECTION (CACHED)
 # ==========================================
