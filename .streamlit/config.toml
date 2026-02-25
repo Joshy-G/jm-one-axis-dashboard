@@ -1,2 +1,9 @@
 [client]
 toolbarMode = "viewer"
+
+[theme]
+primaryColor = "#2a9d8f"      # teal – for buttons, links
+backgroundColor = "#ffffff"    # white background
+secondaryBackgroundColor = "#f0f2f6" # light grey for containers
+textColor = "#262730"          # dark grey text
+font = "sans serif"

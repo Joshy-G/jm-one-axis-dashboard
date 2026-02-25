@@ -16,26 +16,49 @@ st.set_page_config(page_title="JM ONE AXIS Dashboard", layout="wide")
 # Place this right after st.set_page_config()
 st.markdown("""
 <style>
-    /* Make logo responsive */
+    /* ---------- LIGHT THEME ---------- */
+    .stApp {
+        background-color: #ffffff;
+    }
+    .sidebar .sidebar-content {
+        background-color: #f8f9fa;
+    }
+    h1, h2, h3 {
+        color: #264653;
+    }
+    .stMetric {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .stDataFrame {
+        background-color: white;
+    }
+    .stButton>button {
+        background-color: #2a9d8f;
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+    }
+    .stButton>button:hover {
+        background-color: #21867a;
+    }
+
+    /* ---------- EXISTING RULES (keep) ---------- */
     .stImage img {
         max-width: 90% !important;
         height: auto !important;
         margin: 0 auto !important;
         display: block !important;
     }
-
-    /* Hide only the right side of the header (Manage app & deploy badge) */
     header .stAppHeader div:last-child {
         display: none !important;
     }
-
-    /* Hide the footer completely */
     footer {
         visibility: hidden !important;
         display: none !important;
     }
-
-    /* Optional: reduce top padding on mobile to bring logo up */
     @media only screen and (max-width: 600px) {
         .block-container {
             padding-top: 1rem !important;
@@ -220,7 +243,7 @@ df = load_and_process_trade_data()
 st.sidebar.divider()
 menu = st.sidebar.radio(
     "Navigation",
-    ["Trade Entry", "Performance Dashboard", "Risk Monitoring", "Reports"]
+    ["Trade Entry", "Performance Dashboard", "Risk Monitoring", "Reports","Position Sizing"]
 )
 
 # ----------------------------------------------------------
@@ -596,3 +619,55 @@ elif menu == "Reports":
                 st.subheader(f"{report_type} P&L Trend")
                 chart_data = grouped.set_index("Period")["Total_PnL"]
                 st.bar_chart(chart_data)
+                
+# -------------------- position sizing --------------------
+elif menu == "Position Sizing":
+    st.divider()
+    st.header("📐 Position Sizing Calculator")
+
+    # Get current equity
+    if not df.empty:
+        current_equity = df["Equity"].iloc[-1]
+    else:
+        current_equity = INITIAL_CAPITAL + NET_ADJUSTMENT
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        risk_percent = st.number_input(
+            "Risk % of Capital",
+            min_value=0.1,
+            max_value=5.0,
+            value=1.0,
+            step=0.1,
+            help="Percentage of current capital you are willing to risk per trade."
+        )
+    with col2:
+        max_risk_amount = current_equity * (risk_percent / 100)
+        st.metric("Max Risk (₹)", f"{max_risk_amount:,.0f}")
+    with col3:
+        st.metric("Current Capital", f"{current_equity:,.0f}")
+
+    st.subheader("Trade Details")
+    col_entry, col_sl = st.columns(2)
+    with col_entry:
+        entry_price = st.number_input("Entry Price", min_value=0.0, step=0.05, format="%.2f")
+    with col_sl:
+        sl_price = st.number_input("Stop Loss Price", min_value=0.0, step=0.05, format="%.2f")
+
+    if entry_price > 0 and sl_price > 0 and sl_price != entry_price:
+        price_diff = abs(entry_price - sl_price)
+        suggested_qty = int(max_risk_amount // price_diff)
+        if suggested_qty < 1:
+            suggested_qty = 1
+
+        st.success(
+            f"💡 With a **{risk_percent}%** risk, your suggested quantity is **{suggested_qty}** "
+            f"(based on ₹{price_diff:,.2f} stop distance)."
+        )
+
+        actual_risk = suggested_qty * price_diff
+        st.info(f"Total risk for this position: ₹{actual_risk:,.2f}")
+    elif entry_price > 0 and sl_price > 0 and sl_price == entry_price:
+        st.warning("Stop Loss cannot be equal to Entry Price.")
+    else:
+        st.info("Enter entry and stop loss prices to calculate position size.")
