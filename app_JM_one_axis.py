@@ -45,15 +45,18 @@ st.markdown("""
         background-color: #21867a;
     }
 
-    /* ---------- EXISTING RULES (keep) ---------- */
+    /* ---------- HIDE TOP-RIGHT TOOLBAR ---------- */
+    header [data-testid="stToolbar"],
+    header [data-testid="stHeaderToolbar"] {
+        display: none !important;
+    }
+
+    /* ---------- EXISTING RULES ---------- */
     .stImage img {
         max-width: 90% !important;
         height: auto !important;
         margin: 0 auto !important;
         display: block !important;
-    }
-    header [data-testid="stHeaderToolbar"] {
-    display: none !important;
     }
     footer {
         visibility: hidden !important;
