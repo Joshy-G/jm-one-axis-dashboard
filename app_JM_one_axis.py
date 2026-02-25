@@ -13,15 +13,36 @@ import uuid
 
 st.set_page_config(page_title="JM ONE AXIS Dashboard", layout="wide")
 
-# Hide Streamlit branding
-hide_st_style = """
-    <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    </style>
-"""
-st.markdown(hide_st_style, unsafe_allow_html=True)
+# Place this right after st.set_page_config()
+st.markdown("""
+<style>
+    /* Make logo responsive */
+    .stImage img {
+        max-width: 90% !important;
+        height: auto !important;
+        margin: 0 auto !important;
+        display: block !important;
+    }
+
+    /* Hide only the right side of the header (Manage app & deploy badge) */
+    header .stAppHeader div:last-child {
+        display: none !important;
+    }
+
+    /* Hide the footer completely */
+    footer {
+        visibility: hidden !important;
+        display: none !important;
+    }
+
+    /* Optional: reduce top padding on mobile to bring logo up */
+    @media only screen and (max-width: 600px) {
+        .block-container {
+            padding-top: 1rem !important;
+        }
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # ==========================================
 # GOOGLE SHEETS CONNECTION (CACHED)
