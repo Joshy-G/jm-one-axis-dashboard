@@ -277,7 +277,6 @@ if st.sidebar.button("Logout"):
     st.session_state.user = None
     st.cache_data.clear()  # Optional: clear cache on logout
     st.rerun()
-
 # -------------------- Trade Entry --------------------
 if menu == "Trade Entry":
     # Show submission feedback if present
@@ -291,31 +290,92 @@ if menu == "Trade Entry":
 
     st.title("Trade Entry")
 
+    # ---------- Session state defaults ----------
+    defaults = {
+        "instrument": instruments[0] if instruments else "",
+        "option_type": option_types[0] if option_types else "",
+        "strike": "",
+        "expiry": datetime.now().date(),
+        "setup": setups[0] if setups else "",
+        "entry_price": 0.0,
+        "sl_price": 0.0,
+        "target_price": 0.0,
+        "quantity": 1,
+        "exit_price": 0.0,
+        "exit_reason": exit_reasons[0] if exit_reasons else "",
+        "rule_violation": "No",
+        "violation_type": violation_types[0] if violation_types else "",
+        "remarks": "",
+        "chart_link": "",
+    }
+
+    # ---------- Reset form if flagged ----------
+    if st.session_state.get("reset_form"):
+        for key in defaults.keys():
+            if key in st.session_state:
+                del st.session_state[key]
+        st.session_state.reset_form = False
+
+    # ---------- Initialize missing keys ----------
+    for key, default in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = default
+
+    # ---------- Input widgets with keys ----------
     col1, col2 = st.columns(2)
     with col1:
-        instrument = st.selectbox("Instrument", instruments)
-        option_type = st.selectbox("Option Type", option_types)
-        strike = st.text_input("Strike")
-        expiry = st.date_input("Expiry")
-        setup = st.selectbox("Setup", setups)
-        entry_price = st.number_input("Entry Price", min_value=0.0)
-        sl_price = st.number_input("SL Price", min_value=0.0)
-        target_price = st.number_input("Target Price", min_value=0.0)
+        instrument = st.selectbox(
+            "Instrument", instruments,
+            key="instrument",
+            index=instruments.index(st.session_state.instrument) if st.session_state.instrument in instruments else 0
+        )
+        option_type = st.selectbox(
+            "Option Type", option_types,
+            key="option_type",
+            index=option_types.index(st.session_state.option_type) if st.session_state.option_type in option_types else 0
+        )
+        strike = st.text_input("Strike", key="strike")
+        expiry = st.date_input("Expiry", key="expiry")
+        setup = st.selectbox(
+            "Setup", setups,
+            key="setup",
+            index=setups.index(st.session_state.setup) if st.session_state.setup in setups else 0
+        )
+        entry_price = st.number_input("Entry Price", min_value=0.0, key="entry_price")
+        sl_price = st.number_input("SL Price", min_value=0.0, key="sl_price")
+        target_price = st.number_input("Target Price", min_value=0.0, key="target_price")
 
     with col2:
-        quantity = st.number_input("Quantity", min_value=1)
-        exit_price = st.number_input("Exit Price", min_value=0.0)
-        exit_reason = st.selectbox("Exit Reason", exit_reasons)
-        rule_violation = st.selectbox("Rule Violation?", ["No", "Yes"])
-        violation_type = st.selectbox("Violation Type", violation_types)
-        remarks = st.text_area("Remarks")
-        chart_link = st.text_input("Chart Link")
+        quantity = st.number_input("Quantity", min_value=1, key="quantity")
+        exit_price = st.number_input("Exit Price", min_value=0.0, key="exit_price")
+        exit_reason = st.selectbox(
+            "Exit Reason", exit_reasons,
+            key="exit_reason",
+            index=exit_reasons.index(st.session_state.exit_reason) if st.session_state.exit_reason in exit_reasons else 0
+        )
+        rule_violation = st.selectbox(
+            "Rule Violation?", ["No", "Yes"],
+            key="rule_violation",
+            index=0 if st.session_state.rule_violation == "No" else 1
+        )
+        violation_type = st.selectbox(
+            "Violation Type", violation_types,
+            key="violation_type",
+            index=violation_types.index(st.session_state.violation_type) if st.session_state.violation_type in violation_types else 0
+        )
+        remarks = st.text_area("Remarks", key="remarks")
+        chart_link = st.text_input("Chart Link", key="chart_link")
 
-    if st.button("Submit Trade") and not st.session_state.trade_submitted:
+    # ---------- Submit button (disabled while processing) ----------
+    if st.button("Submit Trade", disabled=st.session_state.trade_submitted):
+        # Immediately disable further clicks
+        st.session_state.trade_submitted = True
+
         # Validation
         if (not instrument or not option_type or not strike or not setup or
             entry_price <= 0 or sl_price <= 0 or quantity <= 0 or exit_price <= 0):
             st.error("Please fill all mandatory fields correctly.")
+            st.session_state.trade_submitted = False  # re‑enable button
             st.stop()
 
         trade_risk = (entry_price - sl_price) * quantity
@@ -325,9 +385,6 @@ if menu == "Trade Entry":
         now = datetime.now()
         date_str = now.strftime("%Y-%m-%d")
         timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
-
-        # Use current df to get next trade ID (fast, no extra API call)
-        trade_count = len(df) + 1
         trade_id = f"JM-{now.strftime('%Y%m%d')}-{uuid.uuid4().hex[:4].upper()}"
 
         row = [
@@ -340,14 +397,15 @@ if menu == "Trade Entry":
 
         trade_entry_ws.append_row(row)
 
-        # Invalidate ONLY the trade data cache – settings remain untouched
-        st.cache_data.clear()  # Clears all cached functions (simplest approach)
-        # Alternatively, we could use a version number to force reload, but clear() is fine.
+        # Clear cache so new trade appears in dashboards
+        st.cache_data.clear()
 
+        # Set flag to reset form on next run
+        st.session_state.reset_form = True
+
+        # Set feedback message
         st.session_state.submit_message = "risk_violation" if risk_flag == "Risk Violation" else "success"
-        st.session_state.trade_submitted = True
         st.rerun()
-
             
                 
 # -------------------- Performance Dashboard --------------------
